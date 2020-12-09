@@ -1,0 +1,400 @@
+---
+title: 'Project 2: Modeling, Testing, and Predicting'
+author: "Kristen Daniel, kmd3435"
+date: '2020-12-02'
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+---
+
+```{r setup, include=FALSE}
+library(knitr)
+hook_output = knit_hooks$get('output')
+knit_hooks$set(output = function(x, options) {
+  # this hook is used only when the linewidth option is not NULL
+  if (!is.null(n <- options$linewidth)) {
+    x = knitr:::split_lines(x)
+    # any lines wider than n should be wrapped
+    if (any(nchar(x) > n)) x = strwrap(x, width = n)
+    x = paste(x, collapse = '\n')
+  }
+  hook_output(x, options)
+})
+
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE,fig.align="center",warning=FALSE,message=FALSE,fig.width=8, fig.height=5, linewidth=60)
+options(tibble.width = 100,width = 100)
+library(tidyverse)
+```
+# Kristen Daniel, kmd3435, Project 2
+# Modeling
+
+
+# Introduction to Dataset:
+```{R}
+#install.packages("fivethirtyeight")
+library(fivethirtyeight)
+data(candy_rankings)
+head(candy_rankings)
+count(candy_rankings)
+```
+## The dataset that I chose to use was the "candy_rankings" dataset, which identifies the particular components/ flavors, texture, and shape of the candy brand name, as well as the sugar content and price percentiles determined comparitively within the dataset and the overall win percentage according to the 269,000 matchups. This dataset was obtained from the "fivethirtyeight" package. The variables included are chocolate, fruity, caramel, peanutyalmondy, nougat, crispedricewafer, hard, bar, and pluribus (whether it comes in package or box of multiple candies) which all have true or false categorization based on whether they fit in that category based on that candy's particular composition, shape, and packaging. The numerical variables include sugarpercent, pricepercent, and winpercent. These variables are explained above with sugar and price percentiles determined comparatively to other candies in the dataset and the win percentages listed by the votes the candy gained from responders according to the 269,000 matchups. These variables all explain the competitorname- which includes the 85 observations of the dataset, the candy names.
+
+- **1. (15 pts) MANOVA** 
+```{R}
+data(candy_rankings)
+
+data <- candy_rankings %>% na.omit()
+library(tidyverse)
+library(dplyr)
+```
+
+# Assessing MANOVA assumptions:
+```{R}
+library(rstatix)
+
+group <- data$chocolate 
+DVs <- data %>% select(sugarpercent, pricepercent, winpercent)
+
+#Test multivariate normality for each group (null: assumption met)
+sapply(split(DVs,group), mshapiro_test)
+
+#If any p<.05, stop (assumption violated). If not, test homogeneity of covariance matrices
+
+#Box's M test (null: homogeneity of vcov mats assumption met)
+#box_m(DVs, group)
+
+#Optionally View covariance matrices for each group
+#lapply(split(DVs,group), cov)
+```
+## There are several assumptions to be met for a MANOVA including random samples, independent observations, multivariate normality of dependent variables, equal covariance between each dependent variable and between any two dependent variables, linear relationships among variables, no extreme univariate or multivariate outliers, and no multicollinearity. When running the test for multivariate normality for each group, the not chocolate group return p values of less than 0.05, violating the assumption so multivariate normality is not met for this group. While this is a limitation to using this dataset, we are able to proceed to run the MANOVA, although I will not proceed to test homogeneity of covariance matrices.
+
+# MANOVA
+```{R}
+manova <- manova(cbind(pricepercent, sugarpercent, winpercent) ~ chocolate, data = data)
+summary(manova)
+#null: For at least 1 response variable, the means of chocolate and non-chocolate groups are the same.
+#alternate: #null: For at least 1 response variable, the means of chocolate and non-chocolate groups differ.
+```
+# Univariate ANOVAs
+```{R}
+summary.aov(manova)
+```
+```{R}
+# Univariate ANOVAs (again)
+#anova <- aov(pricepercent ~ chocolate, data = data)
+#summary(anova)
+#anova1 <- aov(sugarpercent ~ chocolate, data = data)
+#summary(anova1)
+#anova2 <- aov(winpercent ~ chocolate, data = data)
+#summary(anova2)
+```
+```{R}
+data %>% group_by(chocolate) %>% summarize(mean(pricepercent), mean(sugarpercent), mean(winpercent))
+```
+# Post-hoc t-tests (Just for example)
+```{R}
+#pairwise.t.test(data$pricepercent, data$chocolate, p.adj = "none")
+#pairwise.t.test(data$sugarpercent, data$chocolate, p.adj = "none")
+#pairwise.t.test(data$winpercent, data$chocolate, p.adj = "none")
+```
+```{R}
+1- (0.95^4) #Probabiity of a Type I error
+0.05/4 #Bonferroni correction 
+```
+
+```{R}
+pairwise.t.test(data$pricepercent, data$chocolate, p.adj = "bonferroni")
+pairwise.t.test(data$sugarpercent, data$chocolate, p.adj = "bonferroni")
+pairwise.t.test(data$winpercent, data$chocolate, p.adj = "bonferroni")
+```
+## The one-way multivariate analysis of variance (MANOVA) was conducted to determine the effect of whether the candy is composed of chocolate (true or false) on the 3 numeric variables, sugar percentile, price percentile, and win percentage. Based on the MANOVA, there was a significant mean difference for at least one of the response variables (significant p-value) found between the two levels of the chocolate variable, those candies composed of chocolate and those without chocolate (Pillai trace= 0.51448, approx F= 28.611, p<0.05). 
+## One-way ANOVAs for each variable were conducted as follow-up tests to the MANOVA, using the Bonferroni method for controlling Type I error rates for multiple comparisons. The univariate ANOVAs for price percentile (F=28.364, p<0.0001) and win percentage (F=56.532, p<0.0001) were both significant (p<0.05). The univariate ANOVA for sugar percentile was not significant (p>0.05). Thus, the chocolate and not chocolate groups differ based on price percentile and win percentage, but not sugar percentile.
+## Post-hoc analyses were performed conducting pairwise comparisons to determine which groups differ, although with only 2 groups in the analyses this step doesn't exactly make sense. We already know which groups differ so I have shown the code just for example (these will not be utilized in calculating the probability of type 1 error and Bonferroni correction).
+## Overall I have performed 1 MANOVA and 3 ANOVAs, so the adjusted significance level will be α = 0.05/4 (0.0125). The probability of at least one type I error, unadjusted, is 0.1854938. The Bonferroni corrected significance level is 0.0125 The year is still significant, while the mass is not. When running the post-hoc t-tests with the Bonferroni multiple comparisons correction, the chocolate, and not chocolate groups still differed based on price percentile (p<0.05) and win percentage (p<0.05), but not sugar percentile (p>0.05). 
+
+- **2. Randomization Test** 
+# Mean Difference test
+```{R}
+data2 <- data %>% select(chocolate, winpercent)
+head(data2)
+data2$chocolate <- ifelse(data2$chocolate==TRUE, "Chocolate", "Not Chocolate")
+```
+```{R}
+library(ggplot2)
+ggplot(data2, aes(winpercent, fill = chocolate)) +  geom_histogram(bins=15) + facet_wrap(~chocolate,ncol=2)+ labs(title = "Distribution of Candies by Win Percentile Colored by Chocolate vs Not Chocolate", subtitle = "Mean Difference Test",caption = "True: Contains Chocolate, False: Not Chocolate" )
+```
+```{R}
+test <- data2 %>% group_by(chocolate) %>% summarize(means=mean(winpercent)) %>% summarize(mean_diff=diff(means))
+test
+```
+#Plot of Potential Null Distribution (Centered at 0)
+```{R}
+df <- data.frame(norms=rnorm(85), unifs=runif(85))
+ggplot(df, aes(df))  +   geom_line(stat="function", data = data.frame(x = c(-3.5, 3.5)), aes(x),  fun = "dnorm", color = "blue", size = 2)
+        
+```
+# Plot of the Test Statistic
+```{R}
+rand_dist<-vector() 
+for(i in 1:5000){
+  new<-data.frame(winpercent=sample(data2$winpercent),chocolate=data2$chocolate)
+  rand_dist[i]<-mean(new[new$chocolate=="Chocolate",]$winpercent)-mean(new[new$chocolate== "Not Chocolate",]$winpercent)}
+
+{hist(rand_dist, main = "", ylab = ""); abline(v=c(-18.77927,18.77927), col="red")}
+```
+```{R}
+mean(rand_dist>18.77927|rand_dist< -18.77927) #pvalue <0.05: reject H0!
+```
+## I chose to run a mean difference test to compare a categorical variable with a numeric variable The null hypothesis of this mean test is that the mean win percentage is the same for chocolate candies and non-chocolate candies. The alternate hypothesis is that there is a difference in the mean win percentage for the chocolate candies and the non-chocolate candies. Based on the mean difference test, we can reject the null hypothesis (p<0.05), suggesting that there is a difference in mean price percentiles of the chocolate and non-chocolate groups. There is a difference in the mean win percentage for chocolate and not chocolate candies. The p-value is 0 possibly due to the large effect observed and a finite number of iterations, this value reflects that the probability of observing a mean difference at least as extreme as the one we got under the "randomization distribution" is 0. This is why the mean difference values, 18.77927, and -18.77927, are not seen on the mean difference distribution. The null distribution would be centered around 0, showing no difference in mean win percent between chocolate and non-chocolate candy groups.
+
+
+- **3. Linear Regression**
+Interpret the coefficient estimates (do not discuss significance)
+#Linear regression model
+```{R}
+#install.packages("interactions")
+library(interactions)
+library(lmtest)
+x <- data$pricepercent-mean(data$pricepercent) #mean-center
+x <- scale(x)
+y<-data$winpercent
+fit <- lm(y~chocolate*x, data= data)
+summary(fit)
+coef(fit)
+```
+## The predicted win percentage for a non-chocolate with a price percentile of 0 is 41.447. Controlling for price percentile, win percentage is 17.732 higher for chocolate candies than non-chocolate candies (t= 6.108, df= 81, p=3.34e-08). Controlling for chocolate status, non-chocolate candies show a decrease of 1.579 (-1.579) in the win percentage for every one unit increase in price percentile (t=-0.819, df=81, p=0.415). The slope of the price percentile on win percentage is 4.629 greater for chocolate candies compared to non-chocolate candies (t=1.600, df=81, p=0.113).
+
+#Linear Regression Plot
+```{R}
+ggplot(data, aes(x=x, y=y, color=chocolate))+geom_point()+geom_smooth(method="lm",se=F)
+```
+```{R}
+cor(data$chocolate,data$winpercent)
+cor(data$pricepercent, data$winpercent)
+```
+```{R}
+y1<-scale(data$winpercent)
+sum(x*y1)/sum(x^2) #estimation of slope
+```
+# Assumptions
+```{R}
+ggplot(data, aes(x=x, y=y, color=chocolate))+geom_point()+geom_smooth(method="lm",se=F) #confirms linearity
+resids<-fit$residuals
+ggplot()+geom_histogram(aes(resids),bins=10) #meets the normality assumption because appears to be a pretty normal distribution
+shapiro.test(resids) #confirms normality assumption is met (p>0.05)
+fitted <- fit$fitted.values
+ggplot()+geom_point(aes(fitted,resids))+geom_hline(yintercept=0, color='red') #meets homoskedasticity assumption because it does not show a fanning pattern and appears relatively constant within chocolate vs not chocolate categories 
+bptest(fit) #confirms that homoskedasticity assumption is met (p>0.05)
+```
+## All assumptions appear to be met based on the ggplots. The original linear regression plot appears to show a relatively linear relationship between x and y. The Shapiro-Wilk test confirms the normality assumption is met with a p-value >0.05 and the Breusch-Pagan test confirms the null hypothesis of homoskedasticity is met (p>0.05).
+```{R}
+library(sandwich)
+coeftest(fit, vcov=vcovHC(fit))
+```
+```{R}
+summary(fit)$r.sq
+```
+## With the robust standard errors, both the t values and the p-values stayed about the same for the chocolate variable (t= 5.2633, p=1.135e-06) and the price percentile variable (t=-0.8490, p=0.3984). The t value and p-value for the interaction between the chocolate variable and the price percentile variable also stayed relatively the same (t=1.3556, p=0.1790). Insignificant changes in t values and p-values fits with our conclusion that assumptions were met originally. The proportion of the variation in the outcome (win percentage) explained by this model is 0.4241398.
+
+- **4. Bootstrapping** 
+# Regression with Bootstrapped Standard Errors Calculated
+```{R}
+fit <- lm(winpercent~chocolate*pricepercent, data= data)
+bootstrap_dat <- sample_frac(data, replace=T)
+samp_dist<-replicate(5000, {
+  bootstrap_dat<-sample_frac(data, replace=T)
+  fit_boot<-lm(winpercent~chocolate*pricepercent,data=bootstrap_dat)
+  coef(fit_boot)
+  })
+
+samp_dist%>%t%>%as.data.frame%>%summarize_all(sd) #estimated SEs
+```
+```{R}
+summary(fit) #original SEs
+coeftest(fit, vcov=vcovHC(fit)) #robust SEs
+```
+```{R}
+#install.packages("lmtest")
+library(lmtest)
+fit_boot<-lm(winpercent~chocolate*pricepercent,data=bootstrap_dat)
+summary(fit_boot) #bootstrapped SEs
+```
+## While the original SEs and the robust SEs were relatively the same with the robust SEs being slightly lower for price percentile and slightly higher for the interaction, the robust SE for the variable chocolate was substantially higher than the original SE for chocolate. For the bootstrapped SEs, the SE values are relatively similar to the original and robust SEs but most similar to the original SEs with a slightly lower bootstrapped SE for the chocolate variable and slightly higher bootstrapped SEs for the price percentile variable and the interaction (although not much variation is observed). The p-values for the bootstrapped model are all not significant (disregarding intercept), following the observed p-values in the original and robust models which are also not significant.
+
+- **5. Logistic Regression** 
+```{R}
+class_diag<-function(prob,truth){
+  
+  tab<-table(factor(prob>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(prob, decreasing=TRUE)
+  probs <- prob[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+```
+# Logistic Regression Model on a Binary Variable
+```{R}
+fit_binary<-glm(pluribus~chocolate+fruity, data = data, family="binomial")
+coeftest(fit_binary)
+```
+```{R}
+exp(coef(fit_binary))
+```
+## Based on the logistic regression, the odds of being pluribus (ie multiple in a package or box) if not chocolate or fruity is 1.4067977. The odds of being pluribus increases by a factor of 0.3366664 if it is chocolate when controlling for fruity (not significant). The odds of being pluribus increases by a factor of 1.5902822 if it is fruity when controlling for chocolate (not significant). None of these variables, chocolate or fruity, have a significant impact on the odds of a candy being pluribus (p>0.05).
+```{R}
+data$prob<-predict(fit_binary,type="response") #predicted probabilities
+table(predict= as.numeric(data$prob>0.5), truth = data$pluribus) %>% addmargins()
+class_diag(data$prob, data$pluribus)
+```
+```{R}
+(25+32)/85 #ACC
+32/44 #TPR
+25/41 #TNR
+32/48 #PPV
+0.6829268 #AUC
+```
+## The sensitivity, or true positive rate (TPR), is 0.7272727 and the specificity, or true negative rate (TNR), is 0.6097561. This indicates that the model is slightly better at correctly classifying whether a pluribus candy is pluribus (TPR) than correctly classifying those that are not pluribus are not (TNR). The precision (PPV) is 0.6666667, which is the proportion of those classified as pluribus actually being pluribus. With an in-sample AUC (area under the curve) of 0.7857143, this model is a fair model for classification, and 0.7857143 is the probability that a randomly selected candy that is classified has a higher predicted probability than a randomly selected candy that is not classified as pluribus. The accuracy is 0.6705882, the proportion of correctly classified candies, is low showing that not many candies were correctly classified as pluribus versus not pluribus.
+```{R}
+data$logit<-predict(fit_binary,type="link")
+data %>% ggplot(aes(logit,fill=pluribus))+geom_density()+xlab("logit") #density of log-odds (logit)
+```
+```{R}
+sens<-function(p,data=data, y=pluribus) mean(data[data$pluribus==1,]$prob>p)
+spec<-function(p,data=data, y=pluribus) mean(data[data$pluribus==0,]$prob<p)
+
+sensitivity<-sapply(seq(0,1,.01),sens,data)
+specificity<-sapply(seq(0,1,.01),spec,data)
+ROC1<-data.frame(sensitivity,specificity,cutoff=seq(0,1,.01)) 
+ROC1%>%gather(key,rate,-cutoff)%>%ggplot(aes(cutoff,rate,color=key))+geom_path()+ geom_vline(xintercept=c(.1,.5,.9),lty=2)
+```
+```{R}
+ROC1$TPR<-sensitivity
+ROC1$FPR<-1-specificity
+ROC1%>%ggplot(aes(FPR,TPR))+geom_path(size=1.5)+geom_segment(aes(x=0,y=0,xend=1,yend=1),lty=2)+ scale_x_continuous(limits = c(0,1))
+```
+```{R}
+#install.packages("plotROC")
+library(plotROC)
+ROCplot<- data %>% ggplot()+geom_roc(aes(d=pluribus, m=prob), n.cuts=0) 
+ROCplot
+calc_auc(ROCplot) #AUC
+```
+## The ROC curve allows for the visualization trade-off between sensitivity and specificity. The AUC is 0.3203991, which means that this model is terrible at predicting if pluribus.
+
+- **6. LASSO**
+# Logistic Regression on All Other Variables
+```{R}
+fit_all <- glm(pluribus~chocolate+fruity+caramel+peanutyalmondy+nougat+crispedricewafer+hard+bar+pricepercent+sugarpercent+winpercent, data=data, family="binomial") #Including all variables except competitor name, which made the output large and confusing 
+summary(fit_all)
+```
+```{R}
+class_diag<-function(probs,truth){
+  
+  tab<-table(factor(probs>.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE) truth<-as.numeric(truth)-1
+  
+  #CALCULATE EXACT AUC
+  ord<-order(probs, decreasing=TRUE)
+  probs <- probs[ord]; truth <- truth[ord]
+  
+  TPR=cumsum(truth)/max(1,sum(truth)) 
+  FPR=cumsum(!truth)/max(1,sum(!truth))
+  
+  dup<-c(probs[-1]>=probs[-length(probs)], FALSE)
+  TPR<-c(0,TPR[!dup],1); FPR<-c(0,FPR[!dup],1)
+  
+  n <- length(TPR)
+  auc<- sum( ((TPR[-1]+TPR[-n])/2) * (FPR[-1]-FPR[-n]) )
+
+  data.frame(acc,sens,spec,ppv,auc)
+}
+probs<-predict(fit_all,type="response") #predicted probabilities
+table(predict= as.numeric(probs>0.5), truth = data$pluribus) %>% addmargins()
+class_diag(probs, data$pluribus)
+```
+## Using the logistic model that utilizes all variables (competitor name was discluded due to long, skewed results), the accuracy is 0.7764706, the sensitivity is 0.8863636, the specificity is 0.6585366, the positive predictive value is 0.7358491, and the area under the curve is 0.8564302. The accuracy is higher than that of the previous linear model but the proportion of correctly classified candies is still fairly low, showing that not many candies were correctly classified as pluribus versus not pluribus. The sensitivity is relatively high, higher than the specificity, indicating that the model is significantly better at correctly classifying whether a pluribus candy is pluribus (TPR) than correctly classifying those that are not pluribus are not (TNR). The precision (PPV) is 0.7358491, better than that of the previous linear model, indicating a higher proportion of those candies classified as pluribus actually being pluribus. This model is considered to be a good fit due to a good in-sample AUC value, indicating a 0.8564302 probability that a randomly selected candy that is classified has a higher predicted probability than a randomly selected candy that is not classified as pluribus.
+
+# 10-Fold CV
+```{R}
+set.seed(1234)
+k=10
+data1<-data[sample(nrow(data)),]
+folds<-cut(seq(1:nrow(data)),breaks=k,labels=F)
+
+diags<-NULL 
+for(i in 1:k){
+  train<-data1[folds!=i,]   
+  test<-data1[folds==i,]
+  truth1<-test$pluribus
+ fit_all<- glm(pluribus~chocolate+fruity+caramel+peanutyalmondy+nougat+crispedricewafer+hard+bar+pricepercent+sugarpercent+winpercent, data=data, family="binomial") 
+  prob1<-predict(fit_all,newdata = test,type="response")
+  diags<-rbind(diags,class_diag(prob1,truth1)) 
+}
+summarize_all(diags,mean)
+```
+## After 10-fold CV, the ACC value stayed the same (0.7763889), the sensitivity went up (0.9033333), specificity went down a little (0.6233333), positive predictive value increased slightly (0.7415476), and AUC decreased slightly (0.8527778) when compared with the in-sample metrics. This model would also fall into the category of a good fit due to its AUC value, 0.8527778, an overall AUC value that can be extrapolated from in-sample to out of the sample.
+
+#LASSO
+```{R}
+#install.packages("glmnet")
+library(glmnet)
+x<-model.matrix(fit_all)
+y<-as.matrix(data$pluribus)
+cv<-cv.glmnet(x,y,family = 'binomial')
+lasso1<-glmnet(x,y,family = 'binomial',lambda=cv$lambda.1se)
+coef(lasso1)
+```
+# 10-Fold CV following LASSO
+```{R}
+set.seed(1234)
+k=10
+data1<-data[sample(nrow(data)),]
+folds<-cut(seq(1:nrow(data)),breaks=k,labels=F)
+
+diags<-NULL 
+for(i in 1:k){
+  train<-data1[folds!=i,]   
+  test<-data1[folds==i,]
+  truth3<-test$pluribus
+ fit_new<- glm(pluribus~bar, data=data, family="binomial") 
+  prob3<-predict(fit_new,newdata = test,type="response")
+  diags<-rbind(diags,class_diag(prob3,truth3)) 
+}
+summarize_all(diags,mean)
+```
+## Only the variable bar is retained when performing LASSO on the fit_all model as it is the best predictor (only one with a coefficient). The ACC, SPEC, PPV, and AUC values are lower when compared to the logistic regression values from above (0.7666667, 0.495, 0.6783333, 0.7475- respectively). However, the sensitivity is higher (1) when compared to the sensitivity value in the logistic regressions above. This model would be considered only a fair fit due to a slightly diminished out of sample AUC value (0.7475) from the original model and all-inclusive model, which may indicate over-fitting (not much change so the original model likely not overfitting too much).
+
+```{R, echo=F}
+## DO NOT DELETE THIS CHUNK!
+sessionInfo()
+Sys.time()
+Sys.info()
+```
+
+
+

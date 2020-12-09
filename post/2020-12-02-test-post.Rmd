@@ -1,0 +1,25 @@
+---
+title: Test Post
+author: ''
+date: '2020-12-02'
+slug: test-post
+categories: []
+tags: []
+description: ''
+---
+# Heading of my Post!
+
+Content of my post!
+
+## Subheading
+
+More content
+![](/post/2020-12-02-test-post_files/earthquake-magnitude-2.png)
+```{R}
+quakes <- quakes
+```
+
+
+```{python}
+r.quakes.mag.mean()
+```

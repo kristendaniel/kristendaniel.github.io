@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Kristen Daniel" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../img/favicon.ico">
+    <title>Project 1: Exploratory Data Analysis</title>
+    <meta name="generator" content="Hugo 0.79.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../post/">BLOG</a></li>
+        
+        <li><a href="../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../project/project1/">Project 1: Exploratory Data Analysis</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         December 2, 2020 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="data-wrangling-and-data-exploration-project-1" class="section level1">
+<h1>Data Wrangling and Data Exploration (Project 1)</h1>
+<div id="kristen-daniel-kmd3435" class="section level2">
+<h2>Kristen Daniel (kmd3435)</h2>
+</div>
+<div id="datasets" class="section level2">
+<h2>Datasets:</h2>
+<pre class="r"><code>library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(cluster)
+Cases_and_Deaths &lt;- read_csv(&quot;United_States_COVID-19_Cases_and_Deaths_by_State_over_Time (1).csv&quot;)
+Cases_and_Deaths &lt;- as.data.frame(Cases_and_Deaths)
+head(Cases_and_Deaths)</code></pre>
+<pre><code>##   submission_date state tot_cases conf_cases prob_cases new_case pnew_case
+## 1      01/22/2020    CO         0         NA         NA        0        NA
+## 2      01/23/2020    CO         0         NA         NA        0        NA
+## 3      01/24/2020    CO         0         NA         NA        0        NA
+## 4      01/25/2020    CO         0         NA         NA        0        NA
+## 5      01/26/2020    CO         0         NA         NA        0        NA
+## 6      01/27/2020    CO         0         NA         NA        0        NA
+##   tot_death conf_death prob_death new_death pnew_death             created_at
+## 1         0         NA         NA         0         NA 03/26/2020 04:22:39 PM
+## 2         0         NA         NA         0         NA 03/26/2020 04:22:39 PM
+## 3         0         NA         NA         0         NA 03/26/2020 04:22:39 PM
+## 4         0         NA         NA         0         NA 03/26/2020 04:22:39 PM
+## 5         0         NA         NA         0         NA 03/26/2020 04:22:39 PM
+## 6         0         NA         NA         0         NA 03/26/2020 04:22:39 PM
+##   consent_cases consent_deaths
+## 1         Agree          Agree
+## 2         Agree          Agree
+## 3         Agree          Agree
+## 4         Agree          Agree
+## 5         Agree          Agree
+## 6         Agree          Agree</code></pre>
+<pre class="r"><code>inpatient_covid &lt;- read_csv(&quot;estimated_inpatient_covid_20201016_2308 (2).csv&quot;)
+inpatient_covid &lt;- as.data.frame(inpatient_covid)
+head(inpatient_covid)</code></pre>
+<pre><code>##   state collection_date Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated
+## 1    CW      2020-09-15                                                  37969
+## 2    CW      2020-09-16                                                  37107
+## 3    CW      2020-09-17                                                  35801
+## 4    CW      2020-09-18                                                  35489
+## 5    CW      2020-09-19                                                  34956
+## 6    CW      2020-09-20                                                  34530
+##   Count.LL Count.UL
+## 1    37748    38190
+## 2    36996    37218
+## 3    35566    36036
+## 4    35227    35751
+## 5    34648    35265
+## 6    34236    34824
+##   Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated
+## 1                                                                 5.18
+## 2                                                                 5.07
+## 3                                                                 4.87
+## 4                                                                 4.82
+## 5                                                                 4.78
+## 6                                                                 4.74
+##   Percentage.LL Percentage.UL Total.Inpatient.Beds Total.LL Total.UL
+## 1          4.92          5.44               712921   707291   718551
+## 2          4.94          5.20               711897   706214   717581
+## 3          4.57          5.16               714387   708745   720029
+## 4          4.49          5.14               715555   709966   721144
+## 5          4.38          5.17               713450   707774   719127
+## 6          4.35          5.12               711039   705328   716751</code></pre>
+<pre class="r"><code>Cases_and_Deaths %&gt;% as.data.frame %&gt;% select(-created_at, -consent_cases, 
+    -consent_deaths, -conf_cases, -prob_cases, -conf_death, -prob_death) %&gt;% 
+    head()</code></pre>
+<pre><code>##   submission_date state tot_cases new_case pnew_case tot_death new_death
+## 1      01/22/2020    CO         0        0        NA         0         0
+## 2      01/23/2020    CO         0        0        NA         0         0
+## 3      01/24/2020    CO         0        0        NA         0         0
+## 4      01/25/2020    CO         0        0        NA         0         0
+## 5      01/26/2020    CO         0        0        NA         0         0
+## 6      01/27/2020    CO         0        0        NA         0         0
+##   pnew_death
+## 1         NA
+## 2         NA
+## 3         NA
+## 4         NA
+## 5         NA
+## 6         NA</code></pre>
+<pre class="r"><code>inpatient_covid %&gt;% as.data.frame %&gt;% select(-Count.LL, -Count.UL, 
+    -Percentage.LL, -Percentage.UL, -Total.Inpatient.Beds, -Total.LL, 
+    -Total.UL) %&gt;% head()</code></pre>
+<pre><code>##   state collection_date Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated
+## 1    CW      2020-09-15                                                  37969
+## 2    CW      2020-09-16                                                  37107
+## 3    CW      2020-09-17                                                  35801
+## 4    CW      2020-09-18                                                  35489
+## 5    CW      2020-09-19                                                  34956
+## 6    CW      2020-09-20                                                  34530
+##   Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated
+## 1                                                                 5.18
+## 2                                                                 5.07
+## 3                                                                 4.87
+## 4                                                                 4.82
+## 5                                                                 4.78
+## 6                                                                 4.74</code></pre>
+<div id="introduction-the-datasets-that-i-chose-were-regarding-cases-and-hospitalizations-by-date-and-state-for-the-current-coronavirus-pandemic.-cases_and_deaths-includes-the-numeric-variables-total-cases-new-cases-probability-of-new-cases-total-deaths-new-deaths-and-the-probability-of-new-deaths-organized-by-date-and-state.-i-removed-the-consent-variables-and-the-variable-that-shows-when-they-entered-that-row-of-data-as-it-did-not-provide-useful-information-for-my-project.-i-also-ended-up-removing-conferred-cases-probable-cases-conferred-deaths-and-probable-deaths-as-the-information-consisted-of-mostly-nas-was-unuseful-or-did-not-make-sense-to-utilize.-the-other-dataset-inpatient_covid-includes-the-variables-estimated-number-of-inpatient-beds-occupied-by-covid-19-patients-and-estimated-percentage-of-inpatient-beds-occupied-by-covid-19-patients-also-organized-by-date-and-state.-i-removed-the-variables-containing-information-about-the-95-confidence-interval-as-well-as-the-total-number-of-inpatient-beds-determined-as-it-is-unnecessary-information-for-my-project.i-acquired-both-datasets-from-healthdata.gov-and-cases_and_deaths-is-information-from-the-cdc.-i-found-this-data-to-be-really-interesting-as-it-is-highly-relevant-to-one-of-the-main-current-issues-in-the-world-and-can-hopefully-provide-more-information.-i-expect-to-see-many-correlations--between-total-cases-and-estimated-number-of-inpatient-beds-occupied-by-covid-19-patients-total-cases-and-total-deaths-and-estimated-number-of-inpatient-beds-occupied-by-covid-19-patients-and-total-deaths." class="section level3">
+<h3>Introduction: The datasets that I chose were regarding cases and hospitalizations by date and state for the current coronavirus pandemic. &quot;Cases_and_Deaths&quot; includes the numeric variables total cases, new cases, probability of new cases, total deaths, new deaths, and the probability of new deaths organized by date and state. I removed the consent variables and the variable that shows when they entered that row of data as it did not provide useful information for my project. I also ended up removing conferred cases, probable cases, conferred deaths, and probable deaths as the information consisted of mostly NAs, was unuseful or did not make sense to utilize. The other dataset, &quot;inpatient_covid,&quot; includes the variables estimated number of inpatient beds occupied by COVID-19 patients and estimated percentage of inpatient beds occupied by COVID-19 patients also organized by date and state. I removed the variables containing information about the 95% confidence interval as well as the total number of inpatient beds determined as it is unnecessary information for my project.I acquired both datasets from healthdata.gov, and &quot;Cases_and_Deaths&quot; is information from the CDC. I found this data to be really interesting as it is highly relevant to one of the main current issues in the world and can hopefully provide more information. I expect to see many correlations- between total cases and estimated number of inpatient beds occupied by COVID-19 patients, total cases and total deaths, and estimated number of inpatient beds occupied by COVID-19 patients and total deaths.</h3>
+</div>
+</div>
+<div id="joining-datasets" class="section level2">
+<h2>Joining Datasets:</h2>
+<pre class="r"><code>ic &lt;- inpatient_covid %&gt;% select(-Count.LL, -Count.UL, -Percentage.LL, 
+    -Percentage.UL, -Total.Inpatient.Beds, -Total.LL, -Total.UL)
+cd &lt;- Cases_and_Deaths %&gt;% as.data.frame() %&gt;% select(-created_at, 
+    -consent_cases, -consent_deaths, -conf_cases, -prob_cases, 
+    -conf_death, -prob_death)
+covid &lt;- full_join(cd, ic, by = c(&quot;state&quot;)) %&gt;% filter(tot_cases != 
+    0)
+covid %&gt;% head()</code></pre>
+<pre><code>##   submission_date state tot_cases new_case pnew_case tot_death new_death
+## 1      03/05/2020    CO         1        1        NA         0         0
+## 2      03/05/2020    CO         1        1        NA         0         0
+## 3      03/05/2020    CO         1        1        NA         0         0
+## 4      03/05/2020    CO         1        1        NA         0         0
+## 5      03/05/2020    CO         1        1        NA         0         0
+## 6      03/05/2020    CO         1        1        NA         0         0
+##   pnew_death collection_date
+## 1         NA      2020-09-15
+## 2         NA      2020-09-16
+## 3         NA      2020-09-17
+## 4         NA      2020-09-18
+## 5         NA      2020-09-19
+## 6         NA      2020-09-20
+##   Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated
+## 1                                                    317
+## 2                                                    293
+## 3                                                    267
+## 4                                                    300
+## 5                                                    294
+## 6                                                    266
+##   Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated
+## 1                                                                 3.25
+## 2                                                                 3.00
+## 3                                                                 2.73
+## 4                                                                 3.07
+## 5                                                                 3.02
+## 6                                                                 2.73</code></pre>
+<div id="to-join-these-datasets-a-full-join-was-necessary-so-that-all-of-the-data-could-be-maintained-since-the-datasets-only-have-state-and-date-in-common.-i-joined-them-by-state-after-removing-the-variables-as-explained-above-and-recreating-the-datasets.-there-were-16140-observations-in-the-cases_and_deaths-dataset-and-1643-observations-in-the-inpatient_cases.-while-the-cases_and_deaths-dataset-began-much-before-the-other-i-decided-to-maintain-this-data-as-i-still-would-like-to-see-any-relationships-between-variables-such-as-cases-and-death-that-occurred-before-the-inpatient_cases-dataset-began-at-the-end-of-august.-i-removed-any-rows-where-the-total-cases-were-0-since-the-focus-of-my-project-is-regarding-cases-of-covid-19.-since-these-rows-should-have-had-0-or-na-values-for-every-variable-this-should-not-present-any-major-issues." class="section level3">
+<h3>To join these datasets, a full join was necessary so that all of the data could be maintained since the datasets only have state and date in common. I joined them by state after removing the variables as explained above and recreating the datasets. There were 16140 observations in the &quot;Cases_and_Deaths&quot; dataset and 1643 observations in the inpatient_cases. While the &quot;Cases_and_Deaths&quot; dataset began much before the other, I decided to maintain this data as I still would like to see any relationships between variables, such as cases and death that occurred before the &quot;inpatient_cases&quot; dataset began at the end of August. I removed any rows where the total cases were 0 since the focus of my project is regarding cases of COVID-19. Since these rows should have had 0 or NA values for every variable, this should not present any major issues.</h3>
+</div>
+</div>
+<div id="tidying-data" class="section level2">
+<h2>Tidying Data:</h2>
+<pre class="r"><code>cov1 &lt;- covid %&gt;% arrange(submission_date) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;01/.......&quot;, &quot;January&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;02/.......&quot;, &quot;February&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;03/.......&quot;, &quot;March&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;04/.......&quot;, &quot;April&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;05/.......&quot;, &quot;May&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;06/.......&quot;, &quot;June&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;07/.......&quot;, &quot;July&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;08/.......&quot;, &quot;August&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;09/.......&quot;, &quot;September&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;10/.......&quot;, &quot;October&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;11/.......&quot;, &quot;November&quot;)) %&gt;% mutate(submission_date = str_replace(submission_date, 
+    &quot;12/.......&quot;, &quot;December&quot;))
+cov2 &lt;- cov1 %&gt;% arrange(collection_date) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-01-..&quot;, &quot;January&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-02-..&quot;, &quot;February&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-03-..&quot;, &quot;March&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-04-..&quot;, &quot;April&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-05-..&quot;, &quot;May&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-06-..&quot;, &quot;June&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-07-..&quot;, &quot;July&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-08-..&quot;, &quot;August&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-09-..&quot;, &quot;September&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-10-..&quot;, &quot;October&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-11-..&quot;, &quot;November&quot;)) %&gt;% mutate(collection_date = str_replace(collection_date, 
+    &quot;....-12-..&quot;, &quot;December&quot;))
+cov3 &lt;- cov2 %&gt;% pivot_longer(cols = c(&quot;submission_date&quot;, &quot;collection_date&quot;), 
+    names_to = &quot;Date&quot;, values_to = &quot;Month&quot;) %&gt;% select(-Date) %&gt;% 
+    group_by(Month) %&gt;% filter(!is.na(Month))
+cov3 %&gt;% head()</code></pre>
+<pre><code>## # A tibble: 6 x 10
+## # Groups:   Month [2]
+##   state tot_cases new_case pnew_case tot_death new_death pnew_death
+##   &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
+## 1 WA            1        1        NA         0         0         NA
+## 2 WA            1        1        NA         0         0         NA
+## 3 WA            1        0        NA         0         0         NA
+## 4 WA            1        0        NA         0         0         NA
+## 5 WA            1        0        NA         0         0         NA
+## 6 WA            1        0        NA         0         0         NA
+## # … with 3 more variables:
+## #   Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated &lt;dbl&gt;,
+## #   Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated &lt;dbl&gt;,
+## #   Month &lt;chr&gt;</code></pre>
+<div id="i-took-this-opportunity-to-mutate-both-date-variables-submision_date-and-collection_date-to-instead-generate-a-month-variable-to-be-used-when-calculating-summary-statistics-such-that-i-am-able-to-group-by-month.-i-used-pivot_longer-to-take-the-two-date-variables-with-the-month-and-make-one-long-column-with-the-months-listed.-i-removed-the-type-of-date-it-was-submission-or-collection-as-this-will-not-be-important-when-calculating-summary-statistics-by-month.-thus-i-took-the-submission_date-and-collection_date-columns-and-created-a-month-column-using-pivot_longer." class="section level3">
+<h3>I took this opportunity to mutate both date variables, &quot;submision_date&quot; and &quot;collection_date&quot;, to instead generate a Month variable to be used when calculating summary statistics, such that I am able to group by month. I used pivot_longer to take the two date variables with the month and make one long column with the months listed. I removed the type of date it was, submission or collection, as this will not be important when calculating summary statistics by month. Thus, I took the &quot;submission_date&quot; and &quot;collection_date&quot; columns and created a Month column using pivot_longer.</h3>
+</div>
+</div>
+<div id="wrangling-and-summary-statistics" class="section level2">
+<h2>Wrangling and Summary Statistics:</h2>
+<pre class="r"><code>covid %&gt;% group_by(state) %&gt;% summarize_if(is.numeric, mean, 
+    na.rm = T) %&gt;% head()</code></pre>
+<pre><code>## # A tibble: 6 x 9
+##   state tot_cases new_case pnew_case tot_death new_death pnew_death
+##   &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
+## 1 AK        2614.     48.4       0        21.5     0.303      0    
+## 2 AL       61603.    782.      114.     1159.     12.8        0.928
+## 3 AR       31095.    443.       30.0     439.      7.57       0.834
+## 4 AZ       82265.    866.       28.1    2011.     21.9        1.59 
+## 5 CA      280491.   3251.        0      5863.     63.5        0    
+## 6 CO       34516.    368.       34.7    1337.      9.61       2.14 
+## # … with 2 more variables:
+## #   Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated &lt;dbl&gt;,
+## #   Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated &lt;dbl&gt;</code></pre>
+<pre class="r"><code>cov3 %&gt;% group_by(Month) %&gt;% summarize_if(is.numeric, mean, na.rm = T)</code></pre>
+<pre><code>## # A tibble: 10 x 9
+##    Month tot_cases new_case pnew_case tot_death new_death pnew_death
+##    &lt;chr&gt;     &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;      &lt;dbl&gt;
+##  1 April  10298.    486.        10.6    4.21e+2  27.2          2.32 
+##  2 Augu…  98187.    898.        28.4    2.80e+3  18.6          0.453
+##  3 Febr…      2.59    0.116    NaN      6.85e-3   0.00685    NaN    
+##  4 Janu…      1.27    0.233    NaN      0.        0          NaN    
+##  5 July   64437.   1181.        16.7    2.22e+3  15.6          0.122
+##  6 June   37438.    528.        16.1    1.82e+3  13.7          1.60 
+##  7 March    640.    112.       NaN      1.01e+1   1.96       NaN    
+##  8 May    24378.    423.         6.44   1.29e+3  23.7          0.950
+##  9 Octo…  68656.    697.        32.8    2.07e+3  16.1          0.745
+## 10 Sept…  71178.    680.        31.4    2.14e+3  16.1          0.733
+## # … with 2 more variables:
+## #   Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated &lt;dbl&gt;,
+## #   Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated &lt;dbl&gt;</code></pre>
+<pre class="r"><code>covid %&gt;% mutate(pdeath = tot_death/tot_cases) %&gt;% select(pdeath) %&gt;% 
+    head()</code></pre>
+<pre><code>##   pdeath
+## 1      0
+## 2      0
+## 3      0
+## 4      0
+## 5      0
+## 6      0</code></pre>
+<pre class="r"><code>covid %&gt;% filter(state == &quot;TX&quot;) %&gt;% mutate(pdeath = tot_death/tot_cases) %&gt;% 
+    select(new_case, new_death, pdeath, submission_date) %&gt;% 
+    arrange(desc(pdeath)) %&gt;% head()</code></pre>
+<pre><code>##   new_case new_death     pdeath submission_date
+## 1     1347        56 0.02814284      05/15/2020
+## 2     1347        56 0.02814284      05/15/2020
+## 3     1347        56 0.02814284      05/15/2020
+## 4     1347        56 0.02814284      05/15/2020
+## 5     1347        56 0.02814284      05/15/2020
+## 6     1347        56 0.02814284      05/15/2020</code></pre>
+<pre class="r"><code>covid %&gt;% summarize(mean_nc = mean(new_case), sd_nc = sd(new_case), 
+    variance = var(new_case, y = NULL, na.rm = FALSE), count_nc = n(), 
+    quantile = qnorm(p = 0.5, mean = mean_nc, sd = sd_nc), min_nc = min(new_case), 
+    max_nc = max(new_case), distinct_nc = n_distinct(new_case), 
+    cor = cor(new_case, new_death))</code></pre>
+<pre><code>##   mean_nc    sd_nc variance count_nc quantile min_nc max_nc distinct_nc
+## 1 656.589 1248.362  1558408   367191  656.589 -10427  17844        2499
+##         cor
+## 1 0.5124259</code></pre>
+<pre class="r"><code>covid %&gt;% group_by(state) %&gt;% mutate(pdeath = tot_death/tot_cases) %&gt;% 
+    summarize(mean_tot = mean(tot_cases), sd_tot = sd(tot_cases), 
+        variance = var(tot_cases, y = NULL, na.rm = FALSE), count_tot = n(), 
+        quantile = qnorm(p = 0.5, mean = mean_tot, sd = sd_tot), 
+        min_tot = min(tot_cases), max_tot = max(tot_cases), distinct_tot = n_distinct(tot_cases), 
+        cor = cor(tot_cases, pdeath)) %&gt;% arrange(desc(mean_tot)) %&gt;% 
+    head()</code></pre>
+<pre><code>## # A tibble: 6 x 10
+##   state mean_tot sd_tot variance count_tot quantile min_tot max_tot distinct_tot
+##   &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;    &lt;dbl&gt;     &lt;int&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;        &lt;int&gt;
+## 1 CA     280491. 3.05e5  9.31e10      8215  280491.       2  861476          235
+## 2 TX     280352. 2.82e5  7.96e10      7006  280352.       3  815678          221
+## 3 FL     274817. 2.76e5  7.61e10      7099  274817.       1  739050          223
+## 4 NYC    179213. 7.88e4  6.21e 9       229  179213.       1  254538          215
+## 5 NY     152314. 6.64e4  4.40e 9      7037  152314.       1  228173          226
+## 6 NJ     143173. 6.60e4  4.35e 9      7006  143173.       2  217804          225
+## # … with 1 more variable: cor &lt;dbl&gt;</code></pre>
+<pre class="r"><code>cormat &lt;- covid %&gt;% select_if(is.numeric) %&gt;% cor(use = &quot;pair&quot;)</code></pre>
+<div id="the-first-table-demonstrates-the-use-of-group_by-and-summarize-in-which-the-mean-of-each-variable-is-calculated-by-state.-the-second-one-also-demonstrates-the-use-of-group_by-and-summarize-in-which-the-mean-of-each-variable-is-calculated-by-month-august-is-the-highest-month.-the-third-table-demonstrates-the-use-of-mutate-to-create-a-new-variable-which-is-the-probability-of-dying-in-which-i-divided-the-total-deaths-by-total-cases-to-get-the-proportion-of-all-cases-that-died-then-i-used-select-to-single-out-this-variable.-the-fourth-table-demonstrates-the-use-of-all-remaining-dplyr-functions-filter-and-arrange-to-single-out-texas-and-gain-insight-into-new-cases-new-deaths-and-date-when-the-proportion-of-deaths-is-the-highest." class="section level3">
+<h3>The first table demonstrates the use of group_by and summarize in which the mean of each variable is calculated by state. The second one also demonstrates the use of group_by and summarize in which the mean of each variable is calculated by Month (August is the highest month). The third table demonstrates the use of mutate to create a new variable which is the probability of dying in which I divided the total deaths by total cases to get the proportion of all cases that died then I used select to single out this variable. The fourth table demonstrates the use of all remaining dplyr functions, filter and arrange to single out Texas and gain insight into new cases, new deaths, and date when the proportion of deaths is the highest.</h3>
+</div>
+<div id="based-on-the-data-produced-mean-of-new-cases-is-656.589-per-day-standard-deviation-is-1248.362-variance-is-1558408-total-count-is-367191-at-a-probability-of-0.5-the-cut-off-is-656.589-the-minimum-is--10427-the-maximum-is-17844-there-are-2499-different-distinct-values-of-new-cases-and-there-is-a-positive-moderate-0.512-correlation-between-new-cases-and-new-deaths.-these-results-are-fairly-expected-because-i-did-anticipate-there-being-a-positive-correlation-between-the-new-cases-and-the-new-deaths-but-one-statistic-that-was-not-anticipated-was-the-minimum-number-of-new-cases-as-a-negative-number-resulted-but-then-i-realized-this-is-likely-the-result-of-recovered-or-dead-patients.-when-grouped-by-state-california-results-in-the-highest-average-number-of-total-cases-with-a-standard-deviation-of-305201.35513-a-variance-of-9.314787e10-a-count-of-8215-a-value-of-280490.93208-as-the-cutoff-for-a-probability-of-0.5-a-minimum-2-cases-a-max-of-861476-235-distinct-values-and-a-correlation-of--0.07820694-between-total-cases-and-proportion-of-deaths--although-this-value-is-so-low-i-would-consider-it-relatively-insignificant." class="section level3">
+<h3>Based on the data produced, mean of new cases is 656.589 per day, standard deviation is 1248.362, variance is 1558408, total count is 367191, at a probability of 0.5, the cut off is 656.589, the minimum is -10427, the maximum is 17844, there are 2499 different distinct values of new cases, and there is a positive, moderate (0.512) correlation between new cases and new deaths. These results are fairly expected because I did anticipate there being a positive correlation between the new cases and the new deaths but one statistic that was not anticipated was the minimum number of new cases as a negative number resulted but then I realized this is likely the result of recovered or dead patients. When grouped by state, California results in the highest average number of total cases with a standard deviation of 305201.35513, a variance of 9.314787e+10, a count of 8215, a value of 280490.93208 as the cutoff for a probability of 0.5, a minimum 2 cases, a max of 861476, 235 distinct values, and a correlation of -0.07820694 between total cases and proportion of deaths- although this value is so low I would consider it relatively insignificant.</h3>
+</div>
+</div>
+<div id="visualizations" class="section level2">
+<h2>Visualizations:</h2>
+<pre class="r"><code># cormat &lt;- covid %&gt;% select_if(is.numeric) %&gt;%
+# cor(use=&#39;pair&#39;)
+covidcor &lt;- cormat %&gt;% as.data.frame %&gt;% rownames_to_column(&quot;var1&quot;) %&gt;% 
+    pivot_longer(-1, names_to = &quot;var2&quot;, values_to = &quot;cor&quot;)
+covidcor %&gt;% ggplot(aes(var1, var2, fill = cor)) + geom_tile() + 
+    scale_fill_gradient2(low = &quot;red&quot;, mid = &quot;white&quot;, high = &quot;blue&quot;) + 
+    theme(axis.text.x = element_text(angle = 90)) + geom_text(aes(label = round(cor, 
+    1)), color = &quot;black&quot;, size = 2)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /> ### This first plot is the correlation heatmap, which clearly shows the highest correlations among total deaths and total cases (0.8) as well as moderate correlations (0.6) among numerous other variables including total cases and new cases along with total cases and estimated inpatient beds occupied by covid-19 patients (0.6). Total deaths and the estimated percentage of inpatient beds occupied by covid-19 patients have a negative correlation but it is very weak and likely the result of the one variable being a percentage since total inpatient beds occupied by covid-19 patients do not reflect a negative correlation.</p>
+<pre class="r"><code>covid %&gt;% ggplot(aes(tot_cases, tot_death)) + geom_point(aes(color = state)) + 
+    xlab(&quot;Total Cases of COVID-19&quot;) + ylab(&quot;Total Deaths of COVID-19&quot;) + 
+    labs(color = &quot;State&quot;) + theme(axis.text.x = element_text(angle = 45, 
+    hjust = 1)) + ggtitle(&quot;Cases and Deaths of COVID-19 by State&quot;)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /> ### This is the plot of total cases vs total deaths colored by state. I used these two variables since they had the strongest correlation. In the plot, total cases and total deaths have the strongest relationship in NYC/ NY, which makes sense since NYC/ NY was hit early on in the pandemic and the death toll was high. Some states show very weak correlations between total cases and total deaths (virgin islands I believe) so the strong correlation does not hold true everywhere, in fact, most states only show a moderate correlation (Delaware). This plot gives a better understanding of the severity of the pandemic by state.</p>
+<pre class="r"><code>percent &lt;- cov3 %&gt;% group_by(Month) %&gt;% summarize_if(is.numeric, 
+    mean, na.rm = T) %&gt;% filter(!is.na(Month))
+percent1 &lt;- percent %&gt;% mutate(Average_New_Cases = case_when(new_case &lt; 
+    100 ~ &quot;Low&quot;, new_case &gt; 100 &amp; new_case &lt; 600 ~ &quot;Med&quot;, new_case &gt; 
+    600 ~ &quot;High&quot;)) %&gt;% arrange(match(Month, month.name))
+percent1 %&gt;% ggplot(aes(x = Month, y = Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated, 
+    fill = Average_New_Cases)) + geom_bar(stat = &quot;summary&quot;, fun.y = &quot;mean&quot;) + 
+    geom_errorbar(stat = &quot;summary&quot;) + ggtitle(&quot;Percentage of Hospital Beds Occupied by COVID-19 Patients by Month&quot;) + 
+    ylab(&quot;Percentage of Inpatient Beds Occupied by COVID-19 Patients(%)&quot;) + 
+    xlab(&quot;Month&quot;) + labs(color = &quot;Average_New_Cases&quot;)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /> ### This plot organizes the percentage of inpatient beds occupied by covid-19 patients and clearly, the highest percent occupied has been in October. I colored it by the average number of new cases per day-grouped high, medium, or low. Although it is not as useful as some other plots since hospital capacities have fluctuated due to resources and numerous other factors have played a role, I chose to depict this to show an element that should be a point of concern. Rising percentages of inpatient beds occupied by covid-19 patients that had previously declined slightly in the month of September along with average new cases per day remaining high shows that the pandemic is persisting in an alarming way.</p>
+</div>
+<div id="k-meanspam-clustering" class="section level2">
+<h2>k-means/PAM clustering:</h2>
+<pre class="r"><code>covid1 &lt;- na.omit(covid) %&gt;% sample_n(1000)
+
+wss &lt;- vector()
+for (i in 1:10) {
+    temp &lt;- covid1 %&gt;% dplyr::select(tot_cases, new_case, tot_death, 
+        new_death, Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated) %&gt;% 
+        kmeans(., i)
+    wss[i] &lt;- temp$tot.withinss
+}
+ggplot() + geom_point(aes(x = 1:10, y = wss)) + geom_path(aes(x = 1:10, 
+    y = wss)) + xlab(&quot;clusters&quot;) + scale_x_continuous(breaks = 1:10)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>clust_dat &lt;- covid1 %&gt;% dplyr::select(tot_cases, new_case, tot_death, 
+    new_death, Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated)
+kmeans1 &lt;- clust_dat %&gt;% scale %&gt;% kmeans(2)
+kmeansclust &lt;- clust_dat %&gt;% mutate(cluster = as.factor(kmeans1$cluster))
+kmeansclust %&gt;% ggplot(aes(tot_cases, tot_death, color = cluster)) + 
+    geom_point()</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-8-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>library(cluster)
+sil_width &lt;- vector()
+for (i in 2:10) {
+    kms &lt;- kmeans(clust_dat, centers = i)
+    sil &lt;- silhouette(kms$cluster, dist(clust_dat))
+    sil_width[i] &lt;- mean(sil[, 3])
+}
+ggplot() + geom_line(aes(x = 1:10, y = sil_width)) + scale_x_continuous(name = &quot;k&quot;, 
+    breaks = 1:10)</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-8-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>library(cluster)
+pam1 &lt;- clust_dat %&gt;% pam(k = 2)
+pam1</code></pre>
+<pre><code>## Medoids:
+##       ID tot_cases new_case tot_death new_death
+## [1,] 722     14949       72       585         0
+## [2,] 271    135439     1135      4402        41
+##      Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated
+## [1,]                                                                 6.79
+## [2,]                                                                 4.37
+## Clustering vector:
+##   [1] 1 1 1 1 1 1 1 1 2 1 1 1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 1 2 2
+##  [38] 2 1 1 1 1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 1 1 2 2 2 1 2 1 1 2 1 1 2
+##  [75] 1 1 2 1 1 1 1 2 1 1 2 1 1 2 1 1 1 1 2 2 1 1 1 2 1 1
+##  [ reached getOption(&quot;max.print&quot;) -- omitted 900 entries ]
+## Objective function:
+##    build     swap 
+## 41898.41 39999.17 
+## 
+## Available components:
+##  [1] &quot;medoids&quot;    &quot;id.med&quot;     &quot;clustering&quot; &quot;objective&quot;  &quot;isolation&quot; 
+##  [6] &quot;clusinfo&quot;   &quot;silinfo&quot;    &quot;diss&quot;       &quot;call&quot;       &quot;data&quot;</code></pre>
+<pre class="r"><code>pamclust &lt;- clust_dat %&gt;% mutate(cluster = as.factor(pam1$clustering))
+pamclust %&gt;% ggplot(aes(tot_cases, tot_death, color = cluster)) + 
+    geom_point()</code></pre>
+<p><img src="../../project/project1_files/figure-html/unnamed-chunk-8-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pamclust %&gt;% group_by(cluster) %&gt;% summarize_if(is.numeric, mean, 
+    na.rm = T)</code></pre>
+<pre><code>## # A tibble: 2 x 6
+##   cluster tot_cases new_case tot_death new_death Percentage.of.Inpatient.Beds.O…
+##   &lt;fct&gt;       &lt;dbl&gt;    &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;                           &lt;dbl&gt;
+## 1 1          22331.     365.      807.      9.74                            5.32
+## 2 2         200079.    1745.     5655.     41.9                             5.62</code></pre>
+<div id="since-the-3rd-plot-depicts-2-as-the-highest-silouette-width-i-used-2-clusters-when-running-pam.-once-the-plot-is-created-using-kmeans-it-is-clear-that-cluster-1-shows-a-higher-total-death-count-associated-a-higher-total-cases-count-while-cluster-2-shows-a-lower-total-death-count-associated-with-a-lower-total-case-count.-cluster-1-also-shows-higher-levels-of-new-cases-and-new-deaths.-percentage-of-inpatient-beds-occupied-by-covid-19-patients-is-fairly-similar.-pam-is-also-highly-polarized." class="section level3">
+<h3>Since the 3rd plot depicts 2 as the highest silouette width, I used 2 clusters when running PAM. Once the plot is created using kmeans, it is clear that cluster 1 shows a higher total death count associated a higher total cases count while cluster 2 shows a lower total death count associated with a lower total case count. Cluster 1 also shows higher levels of new cases and new deaths. Percentage of inpatient beds occupied by covid-19 patients is fairly similar. PAM is also highly polarized.</h3>
+<p>...</p>
+</div>
+</div>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../js/docs.min.js"></script>
+<script src="../../js/main.js"></script>
+
+<script src="../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

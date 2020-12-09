@@ -1,0 +1,148 @@
+---
+title: 'Project 1: Exploratory Data Analysis'
+author: "SDS348"
+date: ''
+output:
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: no
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE, fig.align = "center", warning = F, message = F,
+tidy=TRUE, tidy.opts=list(width.cutoff=60), R.options=list(max.print=100))
+```
+
+# Data Wrangling and Data Exploration (Project 1)
+
+## Kristen Daniel (kmd3435)
+A knitted R Markdown document (ideally HTML) and the raw R Markdown file (as .Rmd) should both be submitted to Canvas by 11:59pm on 10/11/2020. These two documents will be graded jointly, so they must be consistent (i.e., don’t change the R Markdown file without also updating the knitted document).
+
+The text of the document should provide a narrative structure around your code/output. All results presented must have corresponding code. Any answers/results/plots etc. given without the corresponding R code that generated the result will not be considered. Furthermore, all code contained in your final project document must work correctly (knit early, knit often)! Please do not include any extraneous code or code which produces error messages. (Code that produces warnings is acceptable, as long as you understand what the warnings mean!)
+
+## Datasets:
+```{R}
+library(tidyverse)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(cluster)
+Cases_and_Deaths <- read_csv("United_States_COVID-19_Cases_and_Deaths_by_State_over_Time (1).csv")
+Cases_and_Deaths <- as.data.frame(Cases_and_Deaths)
+head(Cases_and_Deaths)
+inpatient_covid <- read_csv("estimated_inpatient_covid_20201016_2308 (2).csv")
+inpatient_covid <- as.data.frame(inpatient_covid)
+head(inpatient_covid)
+Cases_and_Deaths %>% as.data.frame %>% select(-created_at, -consent_cases, -consent_deaths, -conf_cases, -prob_cases, -conf_death, -prob_death) %>% head()
+inpatient_covid %>% as.data.frame %>% select(-Count.LL, -Count.UL, -Percentage.LL, -Percentage.UL, -Total.Inpatient.Beds, -Total.LL, -Total.UL) %>% head()
+```
+### Introduction: The datasets that I chose were regarding cases and hospitalizations by date and state for the current coronavirus pandemic. "Cases_and_Deaths" includes the numeric variables total cases, new cases, probability of new cases, total deaths, new deaths, and the probability of new deaths organized by date and state. I removed the consent variables and the variable that shows when they entered that row of data as it did not provide useful information for my project. I also ended up removing conferred cases, probable cases, conferred deaths, and probable deaths as the information consisted of mostly NAs, was unuseful or did not make sense to utilize. The other dataset, "inpatient_covid," includes the variables estimated number of inpatient beds occupied by COVID-19 patients and estimated percentage of inpatient beds occupied by COVID-19 patients also organized by date and state. I removed the variables containing information about the 95% confidence interval as well as the total number of inpatient beds determined as it is unnecessary information for my project.I acquired both datasets from healthdata.gov, and "Cases_and_Deaths" is information from the CDC. I found this data to be really interesting as it is highly relevant to one of the main current issues in the world and can hopefully provide more information. I expect to see many correlations- between total cases and estimated number of inpatient beds occupied by COVID-19 patients, total cases and total deaths, and estimated number of inpatient beds occupied by COVID-19 patients and total deaths.
+
+    
+
+## Joining Datasets:
+```{R}
+ic <- inpatient_covid %>% select(-Count.LL, -Count.UL, -Percentage.LL, -Percentage.UL, -Total.Inpatient.Beds, -Total.LL, -Total.UL)
+cd <- Cases_and_Deaths %>% as.data.frame() %>% select(-created_at, -consent_cases, -consent_deaths, -conf_cases, -prob_cases, -conf_death, -prob_death)
+covid <- full_join(cd, ic, by = c("state")) %>% filter(tot_cases!=0)
+covid %>% head()
+```
+### To join these datasets, a full join was necessary so that all of the data could be maintained since the datasets only have state and date in common. I joined them by state after removing the variables as explained above and recreating the datasets. There were 16140 observations in the "Cases_and_Deaths" dataset and 1643 observations in the inpatient_cases. While the "Cases_and_Deaths" dataset began much before the other, I decided to maintain this data as I still would like to see any relationships between variables, such as cases and death that occurred before the "inpatient_cases" dataset began at the end of August. I removed any rows where the total cases were 0 since the focus of my project is regarding cases of COVID-19. Since these rows should have had 0 or NA values for every variable, this should not present any major issues.
+
+## Tidying Data:
+```{R}
+cov1 <- covid %>% arrange(submission_date) %>% mutate(submission_date = str_replace(submission_date, "01/.......", "January")) %>% mutate(submission_date = str_replace(submission_date, "02/.......", "February")) %>% mutate(submission_date = str_replace(submission_date, "03/.......", "March")) %>% mutate(submission_date = str_replace(submission_date, "04/.......", "April")) %>% mutate(submission_date = str_replace(submission_date, "05/.......", "May")) %>% mutate(submission_date = str_replace(submission_date, "06/.......", "June")) %>% mutate(submission_date = str_replace(submission_date, "07/.......", "July")) %>% mutate(submission_date = str_replace(submission_date, "08/.......", "August")) %>% mutate(submission_date = str_replace(submission_date, "09/.......", "September")) %>% mutate(submission_date = str_replace(submission_date, "10/.......", "October")) %>% mutate(submission_date = str_replace(submission_date, "11/.......", "November")) %>% mutate(submission_date = str_replace(submission_date, "12/.......", "December"))
+cov2 <- cov1 %>% arrange(collection_date) %>% mutate(collection_date = str_replace(collection_date, "....-01-..", "January")) %>% mutate(collection_date = str_replace(collection_date, "....-02-..", "February")) %>% mutate(collection_date = str_replace(collection_date, "....-03-..", "March")) %>% mutate(collection_date = str_replace(collection_date, "....-04-..", "April")) %>% mutate(collection_date = str_replace(collection_date, "....-05-..", "May")) %>% mutate(collection_date = str_replace(collection_date, "....-06-..", "June")) %>% mutate(collection_date = str_replace(collection_date, "....-07-..", "July")) %>% mutate(collection_date = str_replace(collection_date, "....-08-..", "August")) %>% mutate(collection_date = str_replace(collection_date, "....-09-..", "September")) %>% mutate(collection_date = str_replace(collection_date, "....-10-..", "October")) %>% mutate(collection_date = str_replace(collection_date, "....-11-..", "November")) %>% mutate(collection_date = str_replace(collection_date, "....-12-..", "December"))
+cov3 <- cov2 %>% pivot_longer(cols = c("submission_date", "collection_date"), names_to = "Date", values_to = "Month") %>% select(-Date) %>% group_by(Month) %>% filter(!is.na(Month))
+cov3 %>% head()
+```
+### I took this opportunity to mutate both date variables, "submision_date" and "collection_date", to instead generate a Month variable to be used when calculating summary statistics, such that I am able to group by month. I used pivot_longer to take the two date variables with the month and make one long column with the months listed. I removed the type of date it was, submission or collection, as this will not be important when calculating summary statistics by month. Thus, I took the "submission_date" and "collection_date" columns and created a Month column using pivot_longer.
+
+## Wrangling and Summary Statistics:
+```{R}
+covid %>% group_by(state) %>% summarize_if(is.numeric, mean, na.rm=T) %>% head()
+cov3 %>% group_by(Month) %>% summarize_if(is.numeric, mean, na.rm=T)
+covid %>% mutate(pdeath= tot_death/ tot_cases) %>% select(pdeath) %>% head()
+covid %>% filter(state=="TX") %>% mutate(pdeath= tot_death/ tot_cases) %>% select(new_case, new_death, pdeath, submission_date) %>% arrange(desc(pdeath)) %>% head()
+
+covid %>% summarize(mean_nc = mean(new_case),sd_nc = sd(new_case), variance = var(new_case, y = NULL, na.rm = FALSE) , count_nc= n(), quantile =qnorm(p =0.5, mean = mean_nc, sd= sd_nc), min_nc=min(new_case), max_nc=max(new_case), distinct_nc= n_distinct(new_case), cor = cor(new_case, new_death))
+covid %>% group_by(state) %>% mutate(pdeath= tot_death/ tot_cases) %>% summarize(mean_tot = mean(tot_cases),sd_tot = sd(tot_cases), variance = var(tot_cases, y = NULL, na.rm = FALSE) , count_tot= n(), quantile =qnorm(p =0.5, mean = mean_tot, sd= sd_tot), min_tot=min(tot_cases), max_tot=max(tot_cases), distinct_tot= n_distinct(tot_cases), cor = cor(tot_cases, pdeath)) %>% arrange(desc(mean_tot)) %>% head()
+cormat <- covid %>% select_if(is.numeric) %>% cor(use="pair")
+```
+### The first table demonstrates the use of group_by and summarize in which the mean of each variable is calculated by state. The second one also demonstrates the use of group_by and summarize in which the mean of each variable is calculated by Month (August is the highest month). The third table demonstrates the use of mutate to create a new variable which is the probability of dying in which I divided the total deaths by total cases to get the proportion of all cases that died then I used select to single out this variable. The fourth table demonstrates the use of all remaining dplyr functions, filter and arrange to single out Texas and gain insight into new cases, new deaths, and date when the proportion of deaths is the highest.
+### Based on the data produced, mean of new cases is 656.589 per day, standard deviation is 1248.362, variance is 1558408, total count is 367191, at a probability of 0.5, the cut off is 656.589, the minimum is -10427, the maximum is 17844, there are 2499 different distinct values of new cases, and there is a positive, moderate (0.512) correlation between new cases and new deaths. These results are fairly expected because I did anticipate there being a positive correlation between the new cases and the new deaths but one statistic that was not anticipated was the minimum number of new cases as a negative number resulted but then I realized this is likely the result of recovered or dead patients. When grouped by state, California results in the highest average number of total cases with a standard deviation of 305201.35513, a variance of 9.314787e+10, a count of 8215, a value of 280490.93208 as the cutoff for a probability of 0.5, a minimum 2 cases, a max of 861476, 235 distinct values, and a correlation of -0.07820694 between total cases and proportion of deaths- although this value is so low I would consider it relatively insignificant.
+
+## Visualizations:
+```{R}
+#cormat <- covid %>% select_if(is.numeric) %>% cor(use="pair")
+covidcor <- cormat %>% as.data.frame %>% rownames_to_column("var1") %>% pivot_longer(-1,names_to="var2",values_to="cor")
+covidcor %>% ggplot(aes(var1,var2,fill=cor))+
+geom_tile()+ scale_fill_gradient2(low="red",mid="white",high="blue")+ theme(axis.text.x = element_text(angle=90))+ geom_text(aes(label=round(cor,1)),color = "black", size = 2)
+```
+### This first plot is the correlation heatmap, which clearly shows the highest correlations among total deaths and total cases (0.8) as well as moderate correlations (0.6) among numerous other variables including total cases and new cases along with total cases and estimated inpatient beds occupied by covid-19 patients (0.6). Total deaths and the estimated percentage of inpatient beds occupied by covid-19 patients have a negative correlation but it is very weak and likely the result of the one variable being a percentage since total inpatient beds occupied by covid-19 patients do not reflect a negative correlation.
+```{R}
+covid %>% ggplot(aes(tot_cases, tot_death)) + 
+geom_point(aes(color = state))+ 
+xlab("Total Cases of COVID-19")+
+ylab("Total Deaths of COVID-19") + 
+labs(color = "State")+
+theme(axis.text.x = element_text(angle=45, hjust=1))+
+ggtitle("Cases and Deaths of COVID-19 by State")
+```
+### This is the plot of total cases vs total deaths colored by state. I used these two variables since they had the strongest correlation. In the plot, total cases and total deaths have the strongest relationship in NYC/ NY, which makes sense since NYC/ NY was hit early on in the pandemic and the death toll was high. Some states show very weak correlations between total cases and total deaths (virgin islands I believe) so the strong correlation does not hold true everywhere, in fact, most states only show a moderate correlation (Delaware). This plot gives a better understanding of the severity of the pandemic by state.
+```{R}
+percent <- cov3 %>% group_by(Month) %>% summarize_if(is.numeric, mean, na.rm=T) %>% filter(!is.na(Month))
+percent1 <- percent %>% mutate(Average_New_Cases = case_when(new_case < 100 ~ "Low", new_case > 100 & new_case < 600 ~"Med", new_case > 600 ~"High"))  %>% arrange(match(Month, month.name))
+percent1 %>% ggplot(aes(x=Month,y=Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated, fill = Average_New_Cases))+
+geom_bar(stat="summary", fun.y="mean") +  
+geom_errorbar(stat="summary")+
+ggtitle("Percentage of Hospital Beds Occupied by COVID-19 Patients by Month")+
+ylab("Percentage of Inpatient Beds Occupied by COVID-19 Patients(%)")+
+xlab("Month") + labs(color = "Average_New_Cases")
+```
+### This plot organizes the percentage of inpatient beds occupied by covid-19 patients and clearly, the highest percent occupied has been in October. I colored it by the average number of new cases per day-grouped high, medium, or low. Although it is not as useful as some other plots since hospital capacities have fluctuated due to resources and numerous other factors have played a role, I chose to depict this to show an element that should be a point of concern. Rising percentages of inpatient beds occupied by covid-19 patients that had previously declined slightly in the month of September along with average new cases per day remaining high shows that the pandemic is persisting in an alarming way.  
+
+## k-means/PAM clustering:
+```{R}
+covid1 <- na.omit(covid) %>% sample_n(1000)
+
+wss<-vector() 
+for(i in 1:10){ 
+temp <- covid1 %>% dplyr::select(tot_cases, new_case, tot_death, new_death, Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated) %>%
+kmeans(.,i)
+wss[i]<-temp$tot.withinss 
+} 
+ggplot()+geom_point(aes(x=1:10,y=wss))+geom_path(aes(x=1:10,y=wss))+  xlab("clusters")+scale_x_continuous(breaks=1:10)
+clust_dat<-covid1%>%dplyr::select(tot_cases, new_case, tot_death, new_death, Percentage.of.Inpatient.Beds.Occupied.by.COVID.19.Patients.Estimated)
+kmeans1<-clust_dat %>% scale %>%kmeans(2)
+kmeansclust<-clust_dat%>%mutate(cluster=as.factor(kmeans1$cluster))
+kmeansclust%>%ggplot(aes(tot_cases, tot_death , color=cluster))+geom_point()
+library(cluster)
+sil_width<-vector() 
+for(i in 2:10){  
+  kms <- kmeans(clust_dat,centers=i) 
+  sil <- silhouette(kms$cluster,dist(clust_dat))
+  sil_width[i]<-mean(sil[,3]) 
+}
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10)
+library(cluster)
+pam1<-clust_dat%>%pam(k=2)
+pam1
+pamclust<-clust_dat%>%mutate(cluster=as.factor(pam1$clustering))
+pamclust%>%ggplot(aes(tot_cases, tot_death,color=cluster))+geom_point()
+pamclust%>%group_by(cluster)%>%summarize_if(is.numeric,mean,na.rm=T)
+```
+    
+### Since the 3rd plot depicts 2 as the highest silouette width, I used 2 clusters when running PAM. Once the plot is created using kmeans, it is clear that cluster 1 shows a higher total death count associated a higher total cases count while cluster 2 shows a lower total death count associated with a lower total case count. Cluster 1 also shows higher levels of new cases and new deaths. Percentage of inpatient beds occupied by covid-19 patients is fairly similar. PAM is also highly polarized.
+
+
+
+...
+
+
+
+
+
