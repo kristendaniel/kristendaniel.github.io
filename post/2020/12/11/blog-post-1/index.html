@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Kristen Daniel" />
+    
+    <link rel="shortcut icon" type="image/x-icon" href="../../../../../img/favicon.ico">
+    <title>Blog Post #1</title>
+    <meta name="generator" content="Hugo 0.79.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="../../../../../css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="../../../../../"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="../../../../../post/">BLOG</a></li>
+        
+        <li><a href="../../../../../projects/">PROJECTS</a></li>
+        
+        <li><a href="../../../../../resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="../../../../../post/2020/12/11/blog-post-1/">Blog Post #1</a></strong>
+          </h3>
+        </div>
+ 
+<div class="blog-title">
+          <h4>
+         December 11, 2020 
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<div id="blog-post-1" class="section level1">
+<h1>Blog Post 1</h1>
+<div id="python" class="section level2">
+<h2>Python</h2>
+<p>For my first blog post, I utilized the flights dataset demonstrate its use within Python functionality. The Python code demonstrates some of the programming fundamentals for basic usage and analysis of data using regular expressions.</p>
+<pre class="r"><code>library(reticulate)
+library(tidyverse)</code></pre>
+<pre><code>## ── Attaching packages ────────────────────────────────────── tidyverse 1.3.0 ──</code></pre>
+<pre><code>## ✓ ggplot2 3.3.2     ✓ purrr   0.3.4
+## ✓ tibble  3.0.3     ✓ dplyr   1.0.1
+## ✓ tidyr   1.1.1     ✓ stringr 1.4.0
+## ✓ readr   1.3.1     ✓ forcats 0.5.0</code></pre>
+<pre><code>## ── Conflicts ───────────────────────────────────────── tidyverse_conflicts() ──
+## x dplyr::filter() masks stats::filter()
+## x dplyr::lag()    masks stats::lag()</code></pre>
+<pre class="r"><code>library(nycflights13)
+flights &lt;- as.data.frame(flights)</code></pre>
+</div>
+<div id="mean-minimum-and-maximum-of-flight-distances" class="section level2">
+<h2>Mean, Minimum, and Maximum of flight distances</h2>
+<pre class="python"><code>r.flights.distance.mean()</code></pre>
+<pre><code>## 1039.9126036297123</code></pre>
+<pre class="python"><code>r.flights.distance.min()</code></pre>
+<pre><code>## 17.0</code></pre>
+<pre class="python"><code>r.flights.distance.max()</code></pre>
+<pre><code>## 4983.0</code></pre>
+<p><img src="../../../../../post/2020-12-11-blog-post-1_files/Density-Map-of-Flights-over-the-US-24-Hours-of-Traffic-in-January-2004-6.png" /> Here is a density map that shows the most common flight paths within the United States to show how often people travel certain distances withing the U.S.</p>
+<pre class="python"><code>import pandas as pd
+r.flights[&quot;distance&quot;].describe()</code></pre>
+<pre><code>## count    336776.000000
+## mean       1039.912604
+## std         733.233033
+## min          17.000000
+## 25%         502.000000
+## 50%         872.000000
+## 75%        1389.000000
+## max        4983.000000
+## Name: distance, dtype: float64</code></pre>
+</div>
+<div id="mean-minimum-and-maximum-of-flight-air-times" class="section level2">
+<h2>Mean, Minimum, and Maximum of flight air times</h2>
+<pre class="python"><code>import numpy as np
+r.flights.air_time.mean()</code></pre>
+<pre><code>## 150.68646019807787</code></pre>
+<pre class="python"><code>r.flights.air_time.min()</code></pre>
+<pre><code>## 20.0</code></pre>
+<pre class="python"><code>r.flights.air_time.max()</code></pre>
+<pre><code>## 695.0</code></pre>
+<pre class="python"><code>r.flights[&quot;air_time&quot;].describe()</code></pre>
+<pre><code>## count    327346.000000
+## mean        150.686460
+## std          93.688305
+## min          20.000000
+## 25%          82.000000
+## 50%         129.000000
+## 75%         192.000000
+## max         695.000000
+## Name: air_time, dtype: float64</code></pre>
+<pre class="python"><code>np.mean(r.flights[r.flights.distance&gt;1039.91].air_time)</code></pre>
+<pre><code>## 243.91571362674767</code></pre>
+<pre class="python"><code>np.mean(r.flights[r.flights.distance&lt;1039.91].air_time)</code></pre>
+<pre><code>## 92.541645172810604</code></pre>
+<pre class="python"><code>import matplotlib
+matplotlib.use(&#39;pdf&#39;)
+import matplotlib.pyplot as plt
+plt.hist(r.flights.air_time)</code></pre>
+<pre><code>## (array([  9.03570000e+04,   1.23003000e+05,   5.27810000e+04,
+##          1.36430000e+04,   4.21140000e+04,   4.74100000e+03,
+##          6.00000000e+00,   0.00000000e+00,   4.84000000e+02,
+##          2.17000000e+02]), array([  20. ,   87.5,  155. ,  222.5,  290. ,  357.5,  425. ,  492.5,
+##         560. ,  627.5,  695. ]), &lt;a list of 10 Patch objects&gt;)
+## 
+## //usr/lib/python3/dist-packages/numpy/lib/function_base.py:748: RuntimeWarning: invalid value encountered in greater_equal
+##   keep = (tmp_a &gt;= mn)
+## //usr/lib/python3/dist-packages/numpy/lib/function_base.py:749: RuntimeWarning: invalid value encountered in less_equal
+##   keep &amp;= (tmp_a &lt;= mx)</code></pre>
+<pre class="python"><code>plt.show()</code></pre>
+<p><img src="../../../../../post/2020-12-11-blog-post-1_files/figure-html/unnamed-chunk-5-1.png" width="672" /> Histogram depicts the proportion of flights for various air times.</p>
+</div>
+<div id="mean-of-flight-arrival-delays-and-departure-delays" class="section level2">
+<h2>Mean of flight arrival delays and departure delays</h2>
+<pre class="python"><code>r.flights.arr_delay.mean()</code></pre>
+<pre><code>## 6.8953767573148896</code></pre>
+<pre class="python"><code>r.flights.dep_delay.mean()</code></pre>
+<pre><code>## 12.639070257304708</code></pre>
+</div>
+<div id="regex" class="section level2">
+<h2>Regex</h2>
+<p>Using the regular expression function in Python on a string that I made up, using real facts, I extracted the destination airports.</p>
+<pre class="python"><code>import re
+string=&quot;Most high earning flights from DFW travel to LAX, ORD, SYD, ATL, LGW, in order.&quot;
+re.findall(r&quot;\w\w\w\W\s&quot;, string)</code></pre>
+<pre><code>## [&#39;LAX, &#39;, &#39;ORD, &#39;, &#39;SYD, &#39;, &#39;ATL, &#39;, &#39;LGW, &#39;]</code></pre>
+</div>
+<div id="final-reticulate" class="section level2">
+<h2>Final Reticulate</h2>
+<p>This definitively shows how R can communicate with Python. In this example, I combine an R expression with a Python expression that explains where the airports extracted using the regular expression above are located.</p>
+<pre class="r"><code>flights_str &lt;- &quot;Flights from DFW that generate the most $$ travel to&quot;</code></pre>
+<pre class="python"><code>destinations=&quot;Los Angeles, Chicago, Sydney, Atlanta, and London&quot;
+print(r.flights_str,destinations)</code></pre>
+<pre><code>## Flights from DFW that generate the most $$ travel to Los Angeles, Chicago, Sydney, Atlanta, and London</code></pre>
+</div>
+</div>
+
+            
+        <hr>         <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div> 
+            </div>
+          </div>
+
+   <hr>  <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div> 
+        </div>
+      </div>
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="../../../../../js/docs.min.js"></script>
+<script src="../../../../../js/main.js"></script>
+
+<script src="../../../../../js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>

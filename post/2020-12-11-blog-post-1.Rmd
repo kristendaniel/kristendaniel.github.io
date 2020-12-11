@@ -1,0 +1,78 @@
+---
+title: 'Blog Post #1'
+author: ''
+date: '2020-12-11'
+slug: blog-post-1
+categories: []
+tags: []
+description: ''
+---
+# Blog Post 1
+
+## Python
+
+For my first blog post, I utilized the flights dataset demonstrate its use within Python functionality. The Python code demonstrates some of the programming fundamentals for basic usage and analysis of data using regular expressions.
+
+```{R}
+library(reticulate)
+library(tidyverse)
+library(nycflights13)
+flights <- as.data.frame(flights)
+```
+
+## Mean, Minimum, and Maximum of flight distances
+```{python}
+r.flights.distance.mean()
+r.flights.distance.min()
+r.flights.distance.max()
+```
+![](/post/2020-12-11-blog-post-1_files/Density-Map-of-Flights-over-the-US-24-Hours-of-Traffic-in-January-2004-6.png)
+Here is a density map that shows the most common flight paths within the United States to show how often people travel certain distances withing the U.S.
+```{python}
+import pandas as pd
+r.flights["distance"].describe()
+```
+
+## Mean, Minimum, and Maximum of flight air times
+```{python}
+import numpy as np
+r.flights.air_time.mean()
+r.flights.air_time.min()
+r.flights.air_time.max()
+r.flights["air_time"].describe()
+np.mean(r.flights[r.flights.distance>1039.91].air_time)
+np.mean(r.flights[r.flights.distance<1039.91].air_time)
+```
+```{python}
+import matplotlib
+matplotlib.use('pdf')
+import matplotlib.pyplot as plt
+plt.hist(r.flights.air_time)
+plt.show()
+```
+Histogram depicts the proportion of flights for various air times.
+
+## Mean of flight arrival delays and departure delays
+```{python}
+r.flights.arr_delay.mean()
+r.flights.dep_delay.mean()
+```
+
+## Regex
+Using the regular expression function in Python on a string that I made up, using real facts, I extracted the destination airports.
+```{python}
+import re
+string="Most high earning flights from DFW travel to LAX, ORD, SYD, ATL, LGW, in order."
+re.findall(r"\w\w\w\W\s", string)
+```
+
+## Final Reticulate
+This definitively shows how R can communicate with Python. In this example, I combine an R expression with a Python expression that explains where the airports extracted using the regular expression above are located.
+```{R}
+flights_str <- "Flights from DFW that generate the most $$ travel to"
+```
+```{python}
+destinations="Los Angeles, Chicago, Sydney, Atlanta, and London"
+print(r.flights_str,destinations)
+
+```
